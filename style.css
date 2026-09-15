@@ -21,6 +21,29 @@ body {
     font-family: 'font', serif;
 }
 
+/*
+ * Film grain like https://guns2swords.com/ — fixed animated noise tile over the page.
+ * Slightly higher opacity than the reference (0.1 on red) so it reads on a white canvas.
+ */
+.grain {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.17;
+    background: url("noise.gif") repeat;
+}
+
+.grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.05' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.10;
+    mix-blend-mode: multiply;
+}
+
 .music-player {
     display: flex;
     flex-direction: column;
