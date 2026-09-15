@@ -35,7 +35,7 @@ body {
     z-index: 9999;
     pointer-events: none;
     opacity: 0.17;
-    background: url("noise.gif") repeat;
+    background: url("images/noise.gif") repeat;
 }
 
 .grain::after {
@@ -74,6 +74,7 @@ body {
     --cube-fill: #d6d4d0;
     --cube-backing: #b8b6b2;
     --cube-ornament-inset: clamp(12px, 4.2%, 22px);
+    --cube-ornament-size: clamp(88px, 26%, 168px);
 
     position: relative;
     width: min(520px, 72vw);
@@ -137,17 +138,38 @@ body {
 
 .music-player__cube-ornament {
     position: absolute;
-    left: var(--cube-ornament-inset);
-    bottom: var(--cube-ornament-inset);
-    width: clamp(88px, 26%, 168px);
+    width: var(--cube-ornament-size);
     aspect-ratio: 1;
     height: auto;
     pointer-events: none;
     z-index: 2;
     object-fit: cover;
-    /* SVG has large empty margins; align visible art to the corner */
     object-position: 12% 91%;
     object-view-box: inset(9.43% 11.89% 9.71% 11.76%);
+}
+
+.music-player__cube-ornament--bottom-left {
+    left: var(--cube-ornament-inset);
+    bottom: var(--cube-ornament-inset);
+}
+
+.music-player__cube-ornament-wrap {
+    position: absolute;
+    width: var(--cube-ornament-size);
+    aspect-ratio: 1;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.music-player__cube-ornament-wrap--top-right {
+    right: var(--cube-ornament-inset);
+    top: var(--cube-ornament-inset);
+}
+
+.music-player__cube-ornament-wrap--top-right .music-player__cube-ornament {
+    width: 100%;
+    height: 100%;
+    transform: rotate(180deg);
 }
 
 @supports (object-view-box: inset(0)) {
