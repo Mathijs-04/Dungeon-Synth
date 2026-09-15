@@ -55,7 +55,7 @@ body {
 }
 
 .music-player__title {
-    margin: 0 0 -0.6rem;
+    margin: 0 0 -0.8rem;
     font-size: clamp(1.25rem, 2.8vw, 2rem);
     font-weight: normal;
     line-height: 1;
