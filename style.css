@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'font';
-    src: url('font.otf') format('opentype');
+    src: url('fonts/font.otf') format('opentype');
     font-weight: normal;
     font-style: normal;
 }
@@ -73,6 +73,7 @@ body {
 .music-player__cube {
     --cube-fill: #d6d4d0;
     --cube-backing: #b8b6b2;
+    --cube-ornament-inset: clamp(12px, 4.2%, 22px);
 
     position: relative;
     width: min(520px, 72vw);
@@ -132,6 +133,28 @@ body {
     filter:
         drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.05))
         drop-shadow(4px 5px 0 var(--cube-backing));
+}
+
+.music-player__cube-ornament {
+    position: absolute;
+    left: var(--cube-ornament-inset);
+    bottom: var(--cube-ornament-inset);
+    width: clamp(88px, 26%, 168px);
+    aspect-ratio: 1;
+    height: auto;
+    pointer-events: none;
+    z-index: 2;
+    object-fit: cover;
+    /* SVG has large empty margins; align visible art to the corner */
+    object-position: 12% 91%;
+    object-view-box: inset(9.43% 11.89% 9.71% 11.76%);
+}
+
+@supports (object-view-box: inset(0)) {
+    .music-player__cube-ornament {
+        object-fit: contain;
+        object-position: left bottom;
+    }
 }
 
 .music-player__cube::after {
