@@ -21,10 +21,14 @@ body {
     font-family: 'font', serif;
 }
 
-/*
- * Film grain like https://guns2swords.com/ — fixed animated noise tile over the page.
- * Slightly higher opacity than the reference (0.1 on red) so it reads on a white canvas.
- */
+.svg-filters {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
 .grain {
     position: fixed;
     inset: 0;
@@ -52,7 +56,6 @@ body {
 
 .music-player__title {
     margin: 0 0 -0.6rem;
-    color: #000;
     font-size: clamp(1.25rem, 2.8vw, 2rem);
     font-weight: normal;
     line-height: 1;
@@ -60,8 +63,90 @@ body {
     z-index: 1;
 }
 
+.music-player__title-ink {
+    display: inline-block;
+    color: #12100e;
+    -webkit-font-smoothing: antialiased;
+    filter: url(#vintage-print);
+}
+
 .music-player__cube {
+    --cube-fill: #d6d4d0;
+    --cube-backing: #b8b6b2;
+
+    position: relative;
     width: min(520px, 72vw);
     aspect-ratio: 1;
-    background-color: #d9d9d9;
+    transform: rotate(0.22deg);
+    background-color: var(--cube-fill);
+    background-image:
+        linear-gradient(
+            168deg,
+            rgba(255, 255, 255, 0.07) 0%,
+            transparent 38%,
+            rgba(0, 0, 0, 0.035) 72%,
+            transparent 100%
+        ),
+        radial-gradient(ellipse 85% 70% at 32% 38%, rgba(0, 0, 0, 0.045), transparent 68%),
+        radial-gradient(ellipse 75% 85% at 71% 62%, rgba(255, 255, 255, 0.05), transparent 65%),
+        radial-gradient(circle at 18% 78%, rgba(0, 0, 0, 0.03) 0, transparent 42%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.55'/%3E%3C/svg%3E");
+    background-blend-mode: multiply, multiply, soft-light, multiply, multiply;
+    background-size: auto, auto, auto, auto, 160px 160px;
+    clip-path: polygon(
+        0.75% 1.05%,
+        14% 0.42%,
+        31% 0.58%,
+        49% 0.38%,
+        67% 0.52%,
+        84% 0.44%,
+        96.5% 1.15%,
+        99.15% 3.8%,
+        98.65% 6.2%,
+        99.25% 9.5%,
+        99.05% 28%,
+        98.45% 29.35%,
+        98.85% 30.6%,
+        99.1% 52%,
+        99.05% 74%,
+        98.55% 86%,
+        99.2% 96.5%,
+        96.8% 98.85%,
+        78% 99.35%,
+        71.4% 99.05%,
+        70.15% 98.55%,
+        69.05% 99.28%,
+        48% 99.42%,
+        26% 99.18%,
+        8% 99.35%,
+        2.35% 98.75%,
+        0.82% 95.8%,
+        0.52% 81.5%,
+        1.05% 80.55%,
+        0.58% 79.35%,
+        0.48% 54%,
+        0.82% 28%,
+        0.42% 12.5%,
+        0.75% 1.05%
+    );
+    filter:
+        drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.05))
+        drop-shadow(4px 5px 0 var(--cube-backing));
+}
+
+.music-player__cube::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.2;
+    mix-blend-mode: multiply;
+    background-image:
+        repeating-linear-gradient(
+            93deg,
+            transparent 0 3px,
+            rgba(0, 0, 0, 0.018) 3px 4px
+        ),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.15' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
+    background-size: auto, 120px 120px;
 }

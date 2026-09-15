@@ -7,8 +7,38 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <svg class="svg-filters" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <filter id="vintage-print" x="-10%" y="-20%" width="120%" height="140%" color-interpolation-filters="sRGB">
+                <feTurbulence type="fractalNoise" baseFrequency="0.042" numOctaves="3" seed="9" result="edgeNoise" />
+                <feDisplacementMap in="SourceGraphic" in2="edgeNoise" scale="0.36" xChannelSelector="R" yChannelSelector="G" result="roughened" />
+
+                <feGaussianBlur in="roughened" stdDeviation="0.26" result="bleed" />
+                <feColorMatrix in="bleed" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.24 0" result="bleedFaint" />
+                <feMerge result="inkBleed">
+                    <feMergeNode in="bleedFaint" />
+                    <feMergeNode in="roughened" />
+                </feMerge>
+
+                <feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="4" seed="3" result="fineNoise" />
+                <feColorMatrix in="fineNoise" type="matrix" values="0 0 0 0 0.11  0 0 0 0 0.10  0 0 0 0 0.09  0 0 0 0.62 0" result="densityNoise" />
+                <feComposite in="densityNoise" in2="inkBleed" operator="in" result="densityNoiseMasked" />
+                <feBlend in="inkBleed" in2="densityNoiseMasked" mode="multiply" result="densityClipped" />
+
+                <feTurbulence type="fractalNoise" baseFrequency="1.35" numOctaves="2" seed="17" result="wearNoise" />
+                <feColorMatrix in="wearNoise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="wearAlpha" />
+                <feComponentTransfer in="wearAlpha" result="wearSpecks">
+                    <feFuncA type="discrete" tableValues="1 1 1 0.97 1 1 0.96 1" />
+                </feComponentTransfer>
+                <feComposite in="densityClipped" in2="wearSpecks" operator="in" result="worn" />
+
+                <feColorMatrix in="worn" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1.04 0" result="inkBoost" />
+                <feComposite in="inkBoost" in2="inkBleed" operator="in" />
+            </filter>
+        </defs>
+    </svg>
     <main class="music-player">
-        <h1 class="music-player__title">Dungeon Synth Music Player</h1>
+        <h1 class="music-player__title"><span class="music-player__title-ink">Dungeon Synth Music Player</span></h1>
         <div class="music-player__cube" aria-hidden="true"></div>
     </main>
     <div class="grain" aria-hidden="true"></div>
