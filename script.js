@@ -1,3 +1,40 @@
+(() => {
+
+    const starField = document.getElementById('starfield-stars');
+    if (!starField) {
+        return;
+    }
+
+    const STAR_COUNT = 90;
+    const fragment = document.createDocumentFragment();
+
+    for (let i = 0; i < STAR_COUNT; i += 1) {
+        const star = document.createElement('span');
+        star.className = 'star';
+
+        const size = (1 + Math.random() * 2).toFixed(2);
+        const top = (Math.random() * 100).toFixed(2);
+        const left = (Math.random() * 100).toFixed(2);
+        const minOpacity = (0.12 + Math.random() * 0.06).toFixed(2);
+        const maxOpacity = (0.22 + Math.random() * 0.08).toFixed(2);
+        const duration = (4 + Math.random() * 6).toFixed(2);
+        const delay = (-Math.random() * 10).toFixed(2);
+
+        star.style.setProperty('--star-size', `${size}px`);
+        star.style.setProperty('--star-top', `${top}%`);
+        star.style.setProperty('--star-left', `${left}%`);
+        star.style.setProperty('--star-min', minOpacity);
+        star.style.setProperty('--star-max', maxOpacity);
+        star.style.setProperty('--star-duration', `${duration}s`);
+        star.style.setProperty('--star-delay', `${delay}s`);
+
+        fragment.appendChild(star);
+    }
+
+    starField.appendChild(fragment);
+
+})();
+
 (async () => {
 
     const backgroundFog = document.querySelector('.background-fog');
