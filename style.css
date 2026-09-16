@@ -24,7 +24,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #fff;
+    background: #000;
+    color: #fff;
     font-family: 'font', serif;
 }
 
@@ -72,17 +73,17 @@ body {
 
 .music-player__title-ink {
     display: inline-block;
-    color: #12100e;
+    color: #fff;
     -webkit-font-smoothing: antialiased;
     filter: url(#vintage-print);
 }
 
 .music-player__cube {
-    --cube-fill: #d6d4d0;
-    --cube-backing: #b8b6b2;
+    --cube-fill: #6e6c68;
+    --cube-backing: #4e4c48;
     --cube-ornament-inset: clamp(12px, 4.2cqw, 22px);
     --cube-ornament-size: clamp(88px, 26cqw, 168px);
-    --ink: #12100e;
+    --ink: #fff;
     --cover-inset: clamp(14px, 4.8cqw, 26px);
     --cover-size: clamp(132px, 40.5cqw, 210px);
     --cube-extra-length: clamp(36px, 9cqw, 72px);
@@ -185,7 +186,7 @@ body {
 }
 
 .music-player__cover:focus-visible {
-    outline: 2px solid rgba(18, 16, 14, 0.55);
+    outline: 2px solid rgba(255, 255, 255, 0.55);
     outline-offset: 3px;
 }
 
@@ -640,7 +641,7 @@ body {
     font-size: clamp(0.95rem, 2.15vw, 1.28rem);
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: rgba(18, 16, 14, 0.68);
+    color: rgba(255, 255, 255, 0.68);
 }
 
 .music-player__eq {
@@ -684,7 +685,7 @@ body {
     max-width: 6px;
     height: 100%;
     border-radius: 1px;
-    background: linear-gradient(180deg, var(--ink), rgba(18, 16, 14, 0.72));
+    background: linear-gradient(180deg, var(--ink), rgba(255, 255, 255, 0.72));
     opacity: 0.88;
     transform-origin: bottom;
     animation: eq-pulse 2.6s ease-in-out infinite;
