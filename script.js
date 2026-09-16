@@ -306,6 +306,64 @@
         requestAnimationFrame(alignProgressRow);
     };
 
+    const playerScaleHost = document.querySelector('.music-player-scale-host');
+    const playerRoot = document.querySelector('.music-player');
+    const MOBILE_LAYOUT_MAX_WIDTH = 768;
+    const PLAYER_DESIGN_WIDTH_PX = 545;
+    const MOBILE_VIEWPORT_INSET_PX = 20;
+
+    let playerNaturalHeightPx = 0;
+
+    const measurePlayerNaturalHeight = () => {
+        if (!playerRoot) {
+            return 0;
+        }
+
+        playerRoot.style.setProperty('--player-scale', '1');
+        const height = playerRoot.offsetHeight;
+        playerNaturalHeightPx = height > 0 ? height : playerNaturalHeightPx;
+        return playerNaturalHeightPx;
+    };
+
+    const invalidatePlayerNaturalHeight = () => {
+        playerNaturalHeightPx = 0;
+    };
+
+    const applyMobilePlayerScale = () => {
+        if (!playerScaleHost || !playerRoot) {
+            return;
+        }
+
+        if (window.innerWidth > MOBILE_LAYOUT_MAX_WIDTH) {
+            playerRoot.style.removeProperty('--player-scale');
+            invalidatePlayerNaturalHeight();
+            return;
+        }
+
+        const naturalHeight = playerNaturalHeightPx || measurePlayerNaturalHeight();
+        if (!naturalHeight) {
+            return;
+        }
+
+        const scaleW = (window.innerWidth - MOBILE_VIEWPORT_INSET_PX * 2) / PLAYER_DESIGN_WIDTH_PX;
+        const scaleH = (window.innerHeight - MOBILE_VIEWPORT_INSET_PX * 2) / naturalHeight;
+        const scale = Math.min(scaleW, scaleH, 1);
+
+        playerRoot.style.setProperty('--player-scale', String(scale));
+    };
+
+    const scheduleMobilePlayerScale = () => {
+        requestAnimationFrame(() => {
+            applyMobilePlayerScale();
+            scheduleAlignProgressRow();
+        });
+    };
+
+    const scheduleMobilePlayerScaleAfterLayout = () => {
+        invalidatePlayerNaturalHeight();
+        scheduleMobilePlayerScale();
+    };
+
 
     const applyTrack = (index) => {
         const track = tracks[index];
@@ -323,6 +381,7 @@
         currentDuration = track.duration || 0;
         updateDurationUI();
         updateProgressUI(0);
+        scheduleMobilePlayerScaleAfterLayout();
     };
 
 
@@ -591,8 +650,9 @@
 
     // Keep the progress row's edges pinned to the shuffle button and volume
     // rail as the fluid, container-query-based layout resizes.
-    window.addEventListener('resize', scheduleAlignProgressRow);
-    document.fonts?.ready?.then(scheduleAlignProgressRow).catch(() => {});
-    scheduleAlignProgressRow();
+    window.addEventListener('resize', scheduleMobilePlayerScale);
+    document.fonts?.ready?.then(scheduleMobilePlayerScaleAfterLayout).catch(() => {});
+    coverArt?.addEventListener('load', scheduleMobilePlayerScaleAfterLayout);
+    scheduleMobilePlayerScaleAfterLayout();
 
 })();
