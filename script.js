@@ -314,13 +314,29 @@
 
     let playerNaturalHeightPx = 0;
 
+    const readPlayerNaturalHeight = () => {
+        if (!playerRoot) {
+            return 0;
+        }
+
+        const scale = parseFloat(playerRoot.style.getPropertyValue('--player-scale'))
+            || parseFloat(getComputedStyle(playerRoot).zoom)
+            || 1;
+        const safeScale = scale > 0 ? scale : 1;
+
+        return playerRoot.getBoundingClientRect().height / safeScale;
+    };
+
     const measurePlayerNaturalHeight = () => {
         if (!playerRoot) {
             return 0;
         }
 
-        playerRoot.style.setProperty('--player-scale', '1');
-        const height = playerRoot.offsetHeight;
+        if (playerNaturalHeightPx > 0) {
+            return playerNaturalHeightPx;
+        }
+
+        const height = readPlayerNaturalHeight();
         playerNaturalHeightPx = height > 0 ? height : playerNaturalHeightPx;
         return playerNaturalHeightPx;
     };
@@ -381,7 +397,7 @@
         currentDuration = track.duration || 0;
         updateDurationUI();
         updateProgressUI(0);
-        scheduleMobilePlayerScaleAfterLayout();
+        scheduleAlignProgressRow();
     };
 
 
@@ -652,7 +668,7 @@
     // rail as the fluid, container-query-based layout resizes.
     window.addEventListener('resize', scheduleMobilePlayerScale);
     document.fonts?.ready?.then(scheduleMobilePlayerScaleAfterLayout).catch(() => {});
-    coverArt?.addEventListener('load', scheduleMobilePlayerScaleAfterLayout);
+    coverArt?.addEventListener('load', scheduleMobilePlayerScale);
     scheduleMobilePlayerScaleAfterLayout();
 
 })();
