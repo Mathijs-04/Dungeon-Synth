@@ -43,15 +43,15 @@
 
         <div class="music-player__cube">
             <div class="music-player__layout">
-            <button type="button" class="music-player__cover music-player__cover--1" aria-label="Album cover 1 of 7. Click for next.">
+            <div class="music-player__cover music-player__cover--1">
                 <img class="music-player__cover-art" src="images/Cover1.webp" alt="Album artwork 1">
-            </button>
+            </div>
 
             <div class="music-player__panel">
                 <div class="music-player__info">
                     <h2 class="music-player__track-title"><span class="music-player__title-ink">Music placeholder 1</span></h2>
                     <p class="music-player__track-artist">Artist placeholder 1</p>
-                    <div class="music-player__eq" aria-hidden="true">
+                    <div class="music-player__eq" data-eq="idle" aria-hidden="true">
                         <span class="music-player__eq-bar"></span>
                         <span class="music-player__eq-bar"></span>
                         <span class="music-player__eq-bar"></span>
@@ -76,6 +76,26 @@
                         <span class="music-player__eq-bar"></span>
                     </div>
                 </div>
+            </div>
+
+            <div class="music-player__controls" role="group" aria-label="Playback controls">
+                <button type="button" class="music-player__control music-player__control--stop" aria-label="Stop">
+                    <img class="music-player__control-icon" src="images/Stop.png" alt="">
+                </button>
+                <button type="button" class="music-player__control music-player__control--previous" aria-label="Previous track">
+                    <img class="music-player__control-icon" src="images/Previous.png" alt="">
+                </button>
+                <button type="button" class="music-player__control music-player__control--play-pause" data-playback="paused" aria-label="Play">
+                    <img class="music-player__control-icon music-player__control-icon--play" src="images/Play.png" alt="">
+                    <img class="music-player__control-icon music-player__control-icon--pause" src="images/Pause.png" alt="">
+                </button>
+                <button type="button" class="music-player__control music-player__control--next" aria-label="Next track">
+                    <img class="music-player__control-icon" src="images/Next.png" alt="">
+                </button>
+                <button type="button" class="music-player__control music-player__control--sound" data-sound="on" aria-label="Mute">
+                    <img class="music-player__control-icon music-player__control-icon--sound-on" src="images/Sound-On.png" alt="">
+                    <img class="music-player__control-icon music-player__control-icon--sound-off" src="images/Sound-Off.png" alt="">
+                </button>
             </div>
             </div>
 

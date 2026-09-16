@@ -46,12 +46,19 @@
 
     const coverVariants = covers.map((_, index) => `music-player__cover--${index + 1}`);
 
-    const coverButton = document.querySelector('.music-player__cover');
+    const coverElement = document.querySelector('.music-player__cover');
     const coverArt = document.querySelector('.music-player__cover-art');
     const trackTitle = document.querySelector('.music-player__track-title .music-player__title-ink');
     const trackArtist = document.querySelector('.music-player__track-artist');
+    const equalizer = document.querySelector('.music-player__eq');
+    const eqBars = equalizer?.querySelectorAll('.music-player__eq-bar') ?? [];
+    const previousButton = document.querySelector('.music-player__control--previous');
+    const nextButton = document.querySelector('.music-player__control--next');
+    const playPauseButton = document.querySelector('.music-player__control--play-pause');
+    const stopButton = document.querySelector('.music-player__control--stop');
+    const soundButton = document.querySelector('.music-player__control--sound');
 
-    if (!coverButton || !coverArt || !trackTitle || !trackArtist) {
+    if (!coverElement || !coverArt || !trackTitle || !trackArtist || !equalizer) {
         return;
     }
 
@@ -63,18 +70,86 @@
         coverArt.alt = cover.alt;
         trackTitle.textContent = cover.title;
         trackArtist.textContent = cover.artist;
-        coverButton.classList.remove(...coverVariants);
-        coverButton.classList.add(`music-player__cover--${index + 1}`);
-        coverButton.setAttribute(
-            'aria-label',
-            `Album cover ${index + 1} of ${covers.length}. Click for next.`,
-        );
+        coverElement.classList.remove(...coverVariants);
+        coverElement.classList.add(`music-player__cover--${index + 1}`);
     };
 
-    coverButton.addEventListener('click', () => {
-        activeIndex = (activeIndex + 1) % covers.length;
+    const restartEqAnimation = () => {
+        eqBars.forEach((bar) => {
+            bar.style.animation = 'none';
+            void bar.offsetHeight;
+            bar.style.removeProperty('animation');
+        });
+    };
+
+    const setEqState = (state) => {
+        const previous = equalizer.dataset.eq;
+        equalizer.dataset.eq = state;
+
+        if (state === 'playing' && previous === 'idle') {
+            restartEqAnimation();
+        }
+    };
+
+    const setPlaybackState = (isPlaying) => {
+        if (!playPauseButton) {
+            return;
+        }
+
+        playPauseButton.dataset.playback = isPlaying ? 'playing' : 'paused';
+        playPauseButton.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
+
+        if (isPlaying) {
+            setEqState('playing');
+            return;
+        }
+
+        if (equalizer.dataset.eq !== 'idle') {
+            setEqState('paused');
+        }
+    };
+
+    const setSoundState = (isOn) => {
+        if (!soundButton) {
+            return;
+        }
+
+        soundButton.dataset.sound = isOn ? 'on' : 'off';
+        soundButton.setAttribute('aria-label', isOn ? 'Mute' : 'Unmute');
+    };
+
+    const goToTrack = (index) => {
+        activeIndex = (index + covers.length) % covers.length;
         applyCover(activeIndex);
+    };
+
+    previousButton?.addEventListener('click', () => {
+        goToTrack(activeIndex - 1);
+    });
+
+    nextButton?.addEventListener('click', () => {
+        goToTrack(activeIndex + 1);
+    });
+
+    playPauseButton?.addEventListener('click', () => {
+        const isPlaying = playPauseButton.dataset.playback === 'playing';
+        setPlaybackState(!isPlaying);
+    });
+
+    stopButton?.addEventListener('click', () => {
+        activeIndex = 0;
+        applyCover(activeIndex);
+        setEqState('idle');
+        setPlaybackState(false);
+    });
+
+    soundButton?.addEventListener('click', () => {
+        const isOn = soundButton.dataset.sound === 'on';
+        setSoundState(!isOn);
     });
 
     applyCover(activeIndex);
+    setEqState('idle');
+    setPlaybackState(false);
+    setSoundState(true);
 })();
