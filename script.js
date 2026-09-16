@@ -1,5 +1,16 @@
 (async () => {
 
+    const backgroundFog = document.querySelector('.background-fog');
+    if (backgroundFog) {
+        const setFogPlaybackRate = () => {
+            backgroundFog.defaultPlaybackRate = 0.6;
+            backgroundFog.playbackRate = 0.6;
+        };
+        backgroundFog.addEventListener('loadedmetadata', setFogPlaybackRate);
+        backgroundFog.addEventListener('play', setFogPlaybackRate);
+        setFogPlaybackRate();
+    }
+
     const coverElement = document.querySelector('.music-player__cover');
 
     const coverArt = document.querySelector('.music-player__cover-art');

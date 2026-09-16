@@ -33,6 +33,26 @@ body {
     -webkit-touch-callout: none;
 }
 
+.background-fog-layer {
+    --background-fog-opacity: 0.3;
+
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.background-fog {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Plain opacity on <video> is often ignored by hardware decoders. */
+    filter: opacity(calc(var(--background-fog-opacity) * 100%));
+}
+
 .svg-filters {
     position: absolute;
     width: 0;
@@ -64,6 +84,8 @@ body {
     --cube-max-width: 545px;
     --cube-viewport-width: 86vw;
 
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
