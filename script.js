@@ -59,8 +59,6 @@
     }
 
 
-    // Load the tracklist and build the playlist. Each entry uses audio/Track-N.mp3
-    // by default, or an optional "audio" filename override in tracklist.json.
     let tracks = [];
 
     try {
@@ -97,9 +95,6 @@
     audio.preload = 'metadata';
 
 
-    // Live audio visualization (Web Audio API). Falls back to the old
-    // decorative CSS keyframe animation if AnalyserNode support or graph
-    // setup fails for any reason.
     const BAR_COUNT = eqBars.length;
 
     let audioContext = null;
@@ -109,9 +104,6 @@
     let barBands = null;
     let rafId = null;
 
-    // Splits the analyser's frequency bins into BAR_COUNT bands on a
-    // logarithmic scale, so the first bars cover bass frequencies and the
-    // last bars cover treble - matching how we actually perceive pitch.
     const buildBarBands = (barCount, sampleRate, fftSize) => {
         const nyquist = sampleRate / 2;
         const minFreq = 30;
@@ -233,9 +225,6 @@
 
     let loopOn = false;
 
-    // Duration used for the progress bar/labels. Seeded from tracklist.json
-    // so the total time shows instantly, then refined once the audio's real
-    // metadata loads (in case it differs slightly from the JSON value).
     let currentDuration = 0;
 
 
@@ -279,9 +268,6 @@
     };
 
 
-    // Lines the time labels up with the shuffle button (left) and the
-    // volume rail (right) above, since those control groups are centered
-    // within their own grid columns rather than flush against the edges.
     const alignProgressRow = () => {
         if (!progressRow || !shuffleButton || !volumeRailEl) {
             return;
@@ -414,8 +400,6 @@
         equalizer.dataset.eq = state;
     };
 
-    // Fallback for browsers without usable Web Audio support: reuses the
-    // original decorative CSS keyframe animation.
     const triggerFallbackPlayingAnimation = () => {
         const previous = equalizer.dataset.eq;
         setEqState('playing');
@@ -480,8 +464,6 @@
 
 
     const playCurrentTrack = () => {
-        // Build/resume the Web Audio graph here, inside a handler triggered
-        // directly by a user gesture, so autoplay policies don't block it.
         ensureAudioGraph();
 
         if (audioContext && audioContext.state === 'suspended') {
@@ -598,8 +580,6 @@
     });
 
 
-    // Keep the play/pause icon and equalizer in sync with whatever the
-    // <audio> element is actually doing (covers programmatic play/pause too).
     audio.addEventListener('play', () => {
         setPlaybackState(true);
 
@@ -615,29 +595,20 @@
         setPlaybackState(false);
 
         if (analyser) {
-            // Stop updating the live spectrum...
             stopVisualizer();
         }
 
         if (equalizer.dataset.eq !== 'idle') {
-            // ...and in both live and fallback modes, clear any per-frame
-            // inline styles and hand off to the "paused" CSS state, which
-            // eases the bars back to their flat resting pose instead of
-            // leaving them frozen mid-pulse/mid-spectrum.
             resetVisualizerBars();
             setEqState('paused');
         }
     });
 
     audio.addEventListener('ended', () => {
-        // audio.loop already handles repeating the current track natively,
-        // so this only fires when loop is off - advance to the next track.
         goToTrack(getNextIndex(), { autoplay: true });
     });
 
     audio.addEventListener('loadedmetadata', () => {
-        // Prefer the audio file's real duration over the tracklist.json
-        // value once it's known, in case they differ slightly.
         if (Number.isFinite(audio.duration) && audio.duration > 0) {
             currentDuration = audio.duration;
             updateDurationUI();
@@ -664,8 +635,6 @@
     setToggleState(loopButton, loopOn, 'Loop on', 'Loop off');
     syncVolumeUI();
 
-    // Keep the progress row's edges pinned to the shuffle button and volume
-    // rail as the fluid, container-query-based layout resizes.
     window.addEventListener('resize', scheduleMobilePlayerScale);
     document.fonts?.ready?.then(scheduleMobilePlayerScaleAfterLayout).catch(() => {});
     coverArt?.addEventListener('load', scheduleMobilePlayerScale);

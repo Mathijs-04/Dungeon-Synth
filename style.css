@@ -50,7 +50,6 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* Plain opacity on <video> is often ignored by hardware decoders. */
     filter: opacity(calc(var(--background-fog-opacity) * 100%));
 }
 
@@ -132,7 +131,6 @@ body {
     --cover-nudge-y: clamp(-10px, -2.4cqw, -14px);
     --cube-extra-length: clamp(18px, 4.5cqw, 44px);
     --cube-texture-overlay-opacity: 0.2;
-    /* Reserved height below the control/progress block (ornament clearance). */
     --cube-bottom-space: calc(var(--cube-ornament-size) * 0.46 + var(--cube-ornament-inset));
     --cube-ornament-bottom: var(--cube-ornament-inset);
 
@@ -673,10 +671,6 @@ body {
     position: absolute;
     inset: 0;
     opacity: var(--cube-texture-overlay-opacity);
-    /*
-     * Texture-Overlay.png stores grain in the alpha channel (RGB is 0).
-     * A plain background-image + screen blend never shows; mask the alpha instead.
-     */
     background-color: #000;
     mask-image: url("images/Texture-Overlay.png");
     mask-mode: alpha;
@@ -823,11 +817,6 @@ body {
     opacity: 0.6;
 }
 
-/* Paused: ease the bars back down to the flat resting pose instead of
-   freezing mid-pulse (fallback mode) or mid-spectrum (live mode). The
-   transform/opacity here match the idle state exactly - only this state
-   adds a brief transition so the settle reads as a soft release rather
-   than an abrupt jump. */
 .music-player__eq[data-eq="paused"] .music-player__eq-bar {
     animation: none;
     transform: scaleY(0.16);
@@ -835,10 +824,6 @@ body {
     transition: transform 0.32s ease-out, opacity 0.32s ease-out;
 }
 
-/* Live mode: bar height/opacity are driven every frame by JS from the
-   Web Audio analyser, so the decorative keyframe animation must be fully
-   disabled here (a running CSS animation would otherwise win the cascade
-   over the inline styles set by the visualizer). */
 .music-player__eq[data-eq="live"] .music-player__eq-bar {
     animation: none;
 }
@@ -1029,9 +1014,6 @@ body {
     align-items: center;
     gap: clamp(8px, 2.4cqw, 14px);
     margin-top: clamp(14px, 4.2cqw, 24px);
-    /* --progress-edge-start/--progress-edge-end are set from JS so the time
-       labels line up with the shuffle button and volume rail above, since
-       those groups are centered (not edge-aligned) within their own columns. */
     padding: 0 var(--progress-edge-end, clamp(2px, 0.6cqw, 6px)) clamp(2px, 0.9cqw, 6px) var(--progress-edge-start, clamp(2px, 0.6cqw, 6px));
 }
 
@@ -1124,10 +1106,6 @@ body {
     box-shadow: inset -8px 0 12px rgba(0, 0, 0, 0.35);
 }
 
-/* Read-only position indicator (no <input> - this bar isn't draggable).
-   Positioned as a sibling of the track, centered on the rail's vertical
-   midpoint by construction, so it can't drift out of alignment like a
-   native range thumb can. Its `left` is set from JS to match the fill %. */
 .music-player__progress-thumb {
     position: absolute;
     top: 50%;
@@ -1329,7 +1307,6 @@ body {
     cursor: grabbing;
 }
 
-/* Mobile: same desktop layout, uniformly scaled to fit the viewport. */
 @media (max-width: 768px) {
     body {
         min-height: 100dvh;
