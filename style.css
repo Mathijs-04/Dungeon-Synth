@@ -57,12 +57,18 @@ body {
 }
 
 .music-player {
+    --cube-max-width: 545px;
+    --cube-viewport-width: 86vw;
+
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    width: min(var(--cube-max-width), var(--cube-viewport-width));
+    max-width: 100%;
 }
 
 .music-player__title {
+    align-self: stretch;
     margin: 0 0 -0.8rem 5px;
     font-size: clamp(1.25rem, 2.8vw, 2rem);
     font-weight: normal;
@@ -86,17 +92,19 @@ body {
     --ink: #000;
     --cover-inset: clamp(14px, 4.8cqw, 26px);
     --cover-size: clamp(132px, 40.5cqw, 210px);
-    --cube-extra-length: clamp(36px, 9cqw, 72px);
+    --cover-nudge-x: clamp(-4px, -1cqw, -6px);
+    --cover-nudge-y: clamp(-10px, -2.4cqw, -14px);
+    --cube-extra-length: clamp(18px, 4.5cqw, 44px);
+    --cube-bottom-space: calc(var(--cube-ornament-size) * 0.66 + var(--cube-ornament-inset));
 
     position: relative;
     container-type: inline-size;
-    width: min(580px, 88vw);
+    width: 100%;
     min-height: calc(
         var(--cover-inset) + var(--cover-size)
-        + var(--cube-ornament-size) * 0.78
-        + var(--cube-ornament-inset)
+        + var(--cube-bottom-space)
         + var(--cover-inset)
-        + var(--cube-extra-length)
+        + var(--cube-extra-length) * 0.25
     );
     transform: rotate(0.22deg);
     background-color: var(--cube-fill);
@@ -173,7 +181,9 @@ body {
     padding: 0;
     border: none;
     background: transparent;
-    transform: rotate(var(--cover-rotate, -0.35deg));
+    transform:
+        translate(var(--cover-nudge-x), var(--cover-nudge-y))
+        rotate(var(--cover-rotate, -0.35deg));
     clip-path: var(--cover-clip);
     filter:
         drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.06))
@@ -553,6 +563,17 @@ body {
     transform: rotate(180deg);
 }
 
+.music-player__cube-ornament-wrap--bottom-right {
+    right: var(--cube-ornament-inset);
+    bottom: var(--cube-ornament-inset);
+}
+
+.music-player__cube-ornament-wrap--bottom-right .music-player__cube-ornament {
+    width: 100%;
+    height: 100%;
+    transform: scaleX(-1);
+}
+
 @supports (object-view-box: inset(0)) {
     .music-player__cube-ornament {
         object-fit: contain;
@@ -589,8 +610,8 @@ body {
     margin:
         calc(var(--cover-inset) + var(--cube-ornament-size) * 0.06)
         var(--cover-inset)
-        calc(var(--cube-ornament-size) * 0.78 + var(--cube-ornament-inset) + var(--cube-extra-length) * 0.35);
-    padding-right: calc(var(--cube-ornament-size) * 0.22);
+        calc(var(--cube-bottom-space) + var(--cube-extra-length) * 0.2);
+    padding-right: calc(var(--cube-ornament-size) * 0.16);
 }
 
 .music-player__panel {
@@ -647,6 +668,7 @@ body {
     margin-top: auto;
     margin-bottom: 0;
     max-width: min(100%, 320px);
+    transform: translateY(var(--cover-nudge-y));
 }
 
 @media (max-width: 30em) {
@@ -832,7 +854,7 @@ body {
 .music-player__control-dot {
     position: absolute;
     left: 50%;
-    bottom: -7px;
+    bottom: -4px;
     transform: translateX(-50%);
     display: block;
     width: 4px;
