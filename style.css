@@ -131,6 +131,7 @@ body {
     --cover-nudge-x: clamp(-4px, -1cqw, -6px);
     --cover-nudge-y: clamp(-10px, -2.4cqw, -14px);
     --cube-extra-length: clamp(18px, 4.5cqw, 44px);
+    --cube-texture-overlay-opacity: 0.2;
     /* Reserved height below the control/progress block (ornament clearance). */
     --cube-bottom-space: calc(var(--cube-ornament-size) * 0.46 + var(--cube-ornament-inset));
     --cube-ornament-bottom: var(--cube-ornament-inset);
@@ -145,21 +146,7 @@ body {
         + var(--cube-extra-length) * 0.25
     );
     transform: rotate(0.22deg);
-    background-color: var(--cube-fill);
-    background-image:
-        linear-gradient(
-            168deg,
-            rgba(255, 255, 255, 0.07) 0%,
-            transparent 38%,
-            rgba(0, 0, 0, 0.035) 72%,
-            transparent 100%
-        ),
-        radial-gradient(ellipse 85% 70% at 32% 38%, rgba(0, 0, 0, 0.045), transparent 68%),
-        radial-gradient(ellipse 75% 85% at 71% 62%, rgba(255, 255, 255, 0.05), transparent 65%),
-        radial-gradient(circle at 18% 78%, rgba(0, 0, 0, 0.03) 0, transparent 42%),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.55'/%3E%3C/svg%3E");
-    background-blend-mode: multiply, multiply, soft-light, multiply, multiply;
-    background-size: auto, auto, auto, auto, 160px 160px;
+    background: transparent;
     clip-path: polygon(
         0.75% 1.05%,
         14% 0.42%,
@@ -673,6 +660,52 @@ body {
     }
 }
 
+.music-player__cube-surface {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    isolation: isolate;
+    background-color: var(--cube-fill);
+}
+
+.music-player__cube-texture {
+    position: absolute;
+    inset: 0;
+    opacity: var(--cube-texture-overlay-opacity);
+    /*
+     * Texture-Overlay.png stores grain in the alpha channel (RGB is 0).
+     * A plain background-image + screen blend never shows; mask the alpha instead.
+     */
+    background-color: #000;
+    mask-image: url("images/Texture-Overlay.png");
+    mask-mode: alpha;
+    mask-repeat: repeat;
+    -webkit-mask-image: url("images/Texture-Overlay.png");
+    -webkit-mask-repeat: repeat;
+}
+
+.music-player__cube-surface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(
+            168deg,
+            rgba(255, 255, 255, 0.07) 0%,
+            transparent 38%,
+            rgba(0, 0, 0, 0.035) 72%,
+            transparent 100%
+        ),
+        radial-gradient(ellipse 85% 70% at 32% 38%, rgba(0, 0, 0, 0.045), transparent 68%),
+        radial-gradient(ellipse 75% 85% at 71% 62%, rgba(255, 255, 255, 0.05), transparent 65%),
+        radial-gradient(circle at 18% 78%, rgba(0, 0, 0, 0.03) 0, transparent 42%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.55'/%3E%3C/svg%3E");
+    background-blend-mode: multiply, multiply, soft-light, multiply, multiply;
+    background-size: auto, auto, auto, auto, 160px 160px;
+}
+
 .music-player__cube::after {
     content: "";
     position: absolute;
@@ -747,11 +780,11 @@ body {
     margin: 0.28em 0 0;
     font-family: 'font2', serif;
     font-size: clamp(1.08rem, 2.5vw, 1.45rem);
-    font-weight: 600;
+    font-weight: 650;
     font-synthesis: weight;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
-    color: rgba(0, 0, 0, 0.68);
+    color: rgba(0, 0, 0, 0.76);
 }
 
 .music-player__eq {
