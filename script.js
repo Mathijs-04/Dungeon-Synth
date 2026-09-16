@@ -394,6 +394,12 @@
 
         goToTrack(getPreviousIndex());
 
+        if (playPauseButton?.dataset.playback === 'paused') {
+
+            setPlaybackState(true);
+
+        }
+
     });
 
 
@@ -401,6 +407,12 @@
     nextButton?.addEventListener('click', () => {
 
         goToTrack(getNextIndex());
+
+        if (playPauseButton?.dataset.playback === 'paused') {
+
+            setPlaybackState(true);
+
+        }
 
     });
 
