@@ -1,98 +1,4 @@
-(() => {
-
-    const covers = [
-
-        {
-
-            src: 'images/Cover1.webp',
-
-            alt: 'Album artwork 1',
-
-            title: 'Music placeholder 1',
-
-            artist: 'Artist placeholder 1',
-
-        },
-
-        {
-
-            src: 'images/Cover2.webp',
-
-            alt: 'Album artwork 2',
-
-            title: 'Music placeholder 2',
-
-            artist: 'Artist placeholder 2',
-
-        },
-
-        {
-
-            src: 'images/Cover3.webp',
-
-            alt: 'Album artwork 3',
-
-            title: 'Music placeholder 3',
-
-            artist: 'Artist placeholder 3',
-
-        },
-
-        {
-
-            src: 'images/Cover4.webp',
-
-            alt: 'Album artwork 4',
-
-            title: 'Music placeholder 4',
-
-            artist: 'Artist placeholder 4',
-
-        },
-
-        {
-
-            src: 'images/Cover5.webp',
-
-            alt: 'Album artwork 5',
-
-            title: 'Music placeholder 5',
-
-            artist: 'Artist placeholder 5',
-
-        },
-
-        {
-
-            src: 'images/Cover6.webp',
-
-            alt: 'Album artwork 6',
-
-            title: 'Music placeholder 6',
-
-            artist: 'Artist placeholder 6',
-
-        },
-
-        {
-
-            src: 'images/Cover7.webp',
-
-            alt: 'Album artwork 7',
-
-            title: 'Music placeholder 7',
-
-            artist: 'Artist placeholder 7',
-
-        },
-
-    ];
-
-
-
-    const coverVariants = covers.map((_, index) => `music-player__cover--${index + 1}`);
-
-
+(async () => {
 
     const coverElement = document.querySelector('.music-player__cover');
 
@@ -122,21 +28,193 @@
 
     const volumeFill = document.querySelector('.music-player__volume-fill');
 
+    const progressRow = document.querySelector('.music-player__progress');
+
+    const progressRail = document.querySelector('.music-player__progress-rail');
+
+    const seekFill = document.querySelector('.music-player__progress-fill');
+
+    const progressThumb = document.querySelector('.music-player__progress-thumb');
+
+    const currentTimeLabel = document.querySelector('.music-player__progress-time--current');
+
+    const durationLabel = document.querySelector('.music-player__progress-time--duration');
+
+    const volumeRailEl = document.querySelector('.music-player__volume-rail');
 
 
     if (!coverElement || !coverArt || !trackTitle || !trackArtist || !equalizer) {
-
         return;
-
     }
 
+
+    // Load the tracklist and build the playlist. Each entry uses audio/Track-N.mp3
+    // by default, or an optional "audio" filename override in tracklist.json.
+    let tracks = [];
+
+    try {
+        const response = await fetch('tracklist.json');
+
+        if (!response.ok) {
+            throw new Error(`Failed to load tracklist.json (${response.status})`);
+        }
+
+        const data = await response.json();
+
+        tracks = (data.tracks ?? []).map((track, index) => ({
+            title: track.name,
+            artist: track.artist,
+            coverSrc: `images/${track.image}`,
+            coverAlt: `Album artwork ${index + 1}`,
+            audioSrc: `audio/${track.audio ?? `Track-${index + 1}.mp3`}`,
+            duration: Number(track.duration) || 0,
+        }));
+    } catch (error) {
+        console.error('The Arcane Archive: could not load tracklist.json', error);
+        return;
+    }
+
+    if (tracks.length === 0) {
+        return;
+    }
+
+
+    const coverVariants = tracks.map((_, index) => `music-player__cover--${index + 1}`);
+
+
+    const audio = new Audio();
+    audio.preload = 'metadata';
+
+
+    // Live audio visualization (Web Audio API). Falls back to the old
+    // decorative CSS keyframe animation if AnalyserNode support or graph
+    // setup fails for any reason.
+    const BAR_COUNT = eqBars.length;
+
+    let audioContext = null;
+    let analyser = null;
+    let sourceNode = null;
+    let freqData = null;
+    let barBands = null;
+    let rafId = null;
+
+    // Splits the analyser's frequency bins into BAR_COUNT bands on a
+    // logarithmic scale, so the first bars cover bass frequencies and the
+    // last bars cover treble - matching how we actually perceive pitch.
+    const buildBarBands = (barCount, sampleRate, fftSize) => {
+        const nyquist = sampleRate / 2;
+        const minFreq = 30;
+        const maxFreq = Math.min(14000, nyquist);
+        const binCount = fftSize / 2;
+        const bands = [];
+
+        for (let i = 0; i < barCount; i += 1) {
+            const t0 = i / barCount;
+            const t1 = (i + 1) / barCount;
+            const f0 = minFreq * (maxFreq / minFreq) ** t0;
+            const f1 = minFreq * (maxFreq / minFreq) ** t1;
+
+            let startBin = Math.floor((f0 / nyquist) * binCount);
+            let endBin = Math.ceil((f1 / nyquist) * binCount);
+
+            startBin = Math.max(0, Math.min(startBin, binCount - 1));
+            endBin = Math.max(startBin + 1, Math.min(endBin, binCount));
+
+            bands.push([startBin, endBin]);
+        }
+
+        return bands;
+    };
+
+    const ensureAudioGraph = () => {
+        if (analyser || audioContext) {
+            return;
+        }
+
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+        if (!AudioContextClass) {
+            return;
+        }
+
+        try {
+            audioContext = new AudioContextClass();
+            sourceNode = audioContext.createMediaElementSource(audio);
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 1024;
+            analyser.smoothingTimeConstant = 0.82;
+
+            sourceNode.connect(analyser);
+            analyser.connect(audioContext.destination);
+
+            freqData = new Uint8Array(analyser.frequencyBinCount);
+            barBands = buildBarBands(BAR_COUNT, audioContext.sampleRate, analyser.fftSize);
+        } catch (error) {
+            console.warn('The Arcane Archive: live audio visualization unavailable', error);
+            analyser = null;
+            audioContext = null;
+        }
+    };
+
+    const renderBars = () => {
+        if (!analyser || !freqData || !barBands) {
+            return;
+        }
+
+        analyser.getByteFrequencyData(freqData);
+
+        barBands.forEach(([start, end], index) => {
+            const bar = eqBars[index];
+
+            if (!bar) {
+                return;
+            }
+
+            let sum = 0;
+
+            for (let bin = start; bin < end; bin += 1) {
+                sum += freqData[bin];
+            }
+
+            const average = sum / (end - start);
+            const normalized = average / 255;
+            const scale = Math.min(1, Math.max(0.08, normalized ** 0.65));
+
+            bar.style.transform = `scaleY(${scale.toFixed(3)})`;
+            bar.style.opacity = (0.55 + scale * 0.45).toFixed(3);
+        });
+
+        rafId = requestAnimationFrame(renderBars);
+    };
+
+    const startVisualizer = () => {
+        if (rafId) {
+            return;
+        }
+
+        rafId = requestAnimationFrame(renderBars);
+    };
+
+    const stopVisualizer = () => {
+        if (rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
+    };
+
+    const resetVisualizerBars = () => {
+        eqBars.forEach((bar) => {
+            bar.style.removeProperty('transform');
+            bar.style.removeProperty('opacity');
+        });
+    };
 
 
     let activeIndex = 0;
 
-    let volumeLevel = 0.75;
+    let volumeLevel = 0.5;
 
-    let volumeBeforeMute = 0.75;
+    let volumeBeforeMute = 0.5;
 
     let isMuted = false;
 
@@ -144,356 +222,366 @@
 
     let loopOn = false;
 
+    // Duration used for the progress bar/labels. Seeded from tracklist.json
+    // so the total time shows instantly, then refined once the audio's real
+    // metadata loads (in case it differs slightly from the JSON value).
+    let currentDuration = 0;
 
 
-    const applyCover = (index) => {
+    const formatTime = (totalSeconds) => {
+        const safeSeconds = Number.isFinite(totalSeconds) && totalSeconds > 0 ? totalSeconds : 0;
+        const minutes = Math.floor(safeSeconds / 60);
+        const seconds = Math.floor(safeSeconds % 60);
 
-        const cover = covers[index];
-
-        coverArt.src = cover.src;
-
-        coverArt.alt = cover.alt;
-
-        trackTitle.textContent = cover.title;
-
-        trackArtist.textContent = cover.artist;
-
-        coverElement.classList.remove(...coverVariants);
-
-        coverElement.classList.add(`music-player__cover--${index + 1}`);
-
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     };
 
+
+    const updateDurationUI = () => {
+        if (durationLabel) {
+            durationLabel.textContent = formatTime(currentDuration);
+        }
+    };
+
+
+    const updateProgressUI = (time) => {
+        const clamped = currentDuration > 0 ? Math.min(Math.max(time, 0), currentDuration) : Math.max(time, 0);
+        const percent = currentDuration > 0 ? (clamped / currentDuration) * 100 : 0;
+        const boundedPercent = Math.min(100, Math.max(0, percent));
+
+        if (currentTimeLabel) {
+            currentTimeLabel.textContent = formatTime(clamped);
+        }
+
+        if (seekFill) {
+            seekFill.style.width = `${boundedPercent}%`;
+        }
+
+        if (progressThumb) {
+            progressThumb.style.left = `${boundedPercent}%`;
+        }
+
+        if (progressRail) {
+            progressRail.setAttribute('aria-valuenow', String(Math.round(boundedPercent)));
+            progressRail.setAttribute('aria-valuetext', `${formatTime(clamped)} of ${formatTime(currentDuration)}`);
+        }
+    };
+
+
+    // Lines the time labels up with the shuffle button (left) and the
+    // volume rail (right) above, since those control groups are centered
+    // within their own grid columns rather than flush against the edges.
+    const alignProgressRow = () => {
+        if (!progressRow || !shuffleButton || !volumeRailEl) {
+            return;
+        }
+
+        const rowRect = progressRow.getBoundingClientRect();
+        const shuffleRect = shuffleButton.getBoundingClientRect();
+        const volumeRect = volumeRailEl.getBoundingClientRect();
+
+        if (rowRect.width === 0) {
+            return;
+        }
+
+        const startOffset = Math.max(0, shuffleRect.left - rowRect.left);
+        const endOffset = Math.max(0, rowRect.right - volumeRect.right);
+
+        progressRow.style.setProperty('--progress-edge-start', `${startOffset}px`);
+        progressRow.style.setProperty('--progress-edge-end', `${endOffset}px`);
+    };
+
+    const scheduleAlignProgressRow = () => {
+        requestAnimationFrame(alignProgressRow);
+    };
+
+
+    const applyTrack = (index) => {
+        const track = tracks[index];
+
+        coverArt.src = track.coverSrc;
+        coverArt.alt = track.coverAlt;
+        trackTitle.textContent = track.title;
+        trackArtist.textContent = track.artist;
+
+        coverElement.classList.remove(...coverVariants);
+        coverElement.classList.add(`music-player__cover--${index + 1}`);
+
+        audio.src = track.audioSrc;
+
+        currentDuration = track.duration || 0;
+        updateDurationUI();
+        updateProgressUI(0);
+    };
 
 
     const restartEqAnimation = () => {
-
         eqBars.forEach((bar) => {
-
             bar.style.animation = 'none';
-
             void bar.offsetHeight;
-
             bar.style.removeProperty('animation');
-
         });
-
     };
-
 
 
     const setEqState = (state) => {
-
-        const previous = equalizer.dataset.eq;
-
         equalizer.dataset.eq = state;
-
-
-
-        if (state === 'playing' && previous === 'idle') {
-
-            restartEqAnimation();
-
-        }
-
     };
 
+    // Fallback for browsers without usable Web Audio support: reuses the
+    // original decorative CSS keyframe animation.
+    const triggerFallbackPlayingAnimation = () => {
+        const previous = equalizer.dataset.eq;
+        setEqState('playing');
+
+        if (previous === 'idle') {
+            restartEqAnimation();
+        }
+    };
 
 
     const setPlaybackState = (isPlaying) => {
-
         if (!playPauseButton) {
-
             return;
-
         }
-
-
 
         playPauseButton.dataset.playback = isPlaying ? 'playing' : 'paused';
-
         playPauseButton.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
-
-
-
-        if (isPlaying) {
-
-            setEqState('playing');
-
-            return;
-
-        }
-
-
-
-        if (equalizer.dataset.eq !== 'idle') {
-
-            setEqState('paused');
-
-        }
-
     };
-
 
 
     const setSoundState = (isOn) => {
-
         if (!soundButton) {
-
             return;
-
         }
 
-
-
         soundButton.dataset.sound = isOn ? 'on' : 'off';
-
         soundButton.setAttribute('aria-label', isOn ? 'Mute' : 'Unmute');
-
     };
-
 
 
     const syncVolumeUI = () => {
-
         const audible = !isMuted && volumeLevel > 0;
-
         const sliderValue = Math.round(volumeLevel * 100);
 
-
-
         if (volumeFill) {
-
             volumeFill.style.width = `${sliderValue}%`;
-
         }
-
-
 
         if (volumeInput) {
-
             volumeInput.value = String(sliderValue);
-
             volumeInput.setAttribute('aria-valuenow', String(sliderValue));
-
         }
 
-
-
         setSoundState(audible);
-
     };
 
+
+    const applyVolumeToAudio = () => {
+        audio.volume = volumeLevel;
+        audio.muted = isMuted || volumeLevel === 0;
+    };
 
 
     const setToggleState = (button, isOn, labelOn, labelOff) => {
-
         if (!button) {
-
             return;
-
         }
 
-
-
         button.setAttribute('aria-pressed', String(isOn));
-
         button.setAttribute('aria-label', isOn ? labelOn : labelOff);
-
     };
 
 
+    const playCurrentTrack = () => {
+        // Build/resume the Web Audio graph here, inside a handler triggered
+        // directly by a user gesture, so autoplay policies don't block it.
+        ensureAudioGraph();
 
-    const goToTrack = (index) => {
+        if (audioContext && audioContext.state === 'suspended') {
+            audioContext.resume().catch(() => {});
+        }
 
-        activeIndex = (index + covers.length) % covers.length;
-
-        applyCover(activeIndex);
-
+        audio.play().catch((error) => {
+            console.warn('The Arcane Archive: playback was prevented', error);
+        });
     };
 
+
+    const goToTrack = (index, { autoplay = false } = {}) => {
+        activeIndex = (index + tracks.length) % tracks.length;
+        applyTrack(activeIndex);
+
+        if (autoplay) {
+            playCurrentTrack();
+        }
+    };
 
 
     const getNextIndex = () => {
-
-        if (shuffleOn && covers.length > 1) {
-
+        if (shuffleOn && tracks.length > 1) {
             let nextIndex = activeIndex;
 
-
-
             while (nextIndex === activeIndex) {
-
-                nextIndex = Math.floor(Math.random() * covers.length);
-
+                nextIndex = Math.floor(Math.random() * tracks.length);
             }
 
-
-
             return nextIndex;
-
         }
 
-
-
-        return (activeIndex + 1) % covers.length;
-
+        return (activeIndex + 1) % tracks.length;
     };
-
 
 
     const getPreviousIndex = () => {
-
-        if (shuffleOn && covers.length > 1) {
-
+        if (shuffleOn && tracks.length > 1) {
             let previousIndex = activeIndex;
 
-
-
             while (previousIndex === activeIndex) {
-
-                previousIndex = Math.floor(Math.random() * covers.length);
-
+                previousIndex = Math.floor(Math.random() * tracks.length);
             }
 
-
-
             return previousIndex;
-
         }
 
-
-
-        return (activeIndex - 1 + covers.length) % covers.length;
-
+        return (activeIndex - 1 + tracks.length) % tracks.length;
     };
 
 
-
     shuffleButton?.addEventListener('click', () => {
-
         shuffleOn = !shuffleOn;
-
         setToggleState(shuffleButton, shuffleOn, 'Shuffle on', 'Shuffle off');
-
     });
-
 
 
     loopButton?.addEventListener('click', () => {
-
         loopOn = !loopOn;
-
+        audio.loop = loopOn;
         setToggleState(loopButton, loopOn, 'Loop on', 'Loop off');
-
     });
-
 
 
     previousButton?.addEventListener('click', () => {
-
-        goToTrack(getPreviousIndex());
-
-        if (playPauseButton?.dataset.playback === 'paused') {
-
-            setPlaybackState(true);
-
-        }
-
+        goToTrack(getPreviousIndex(), { autoplay: true });
     });
-
 
 
     nextButton?.addEventListener('click', () => {
-
-        goToTrack(getNextIndex());
-
-        if (playPauseButton?.dataset.playback === 'paused') {
-
-            setPlaybackState(true);
-
-        }
-
+        goToTrack(getNextIndex(), { autoplay: true });
     });
-
 
 
     playPauseButton?.addEventListener('click', () => {
-
-        const isPlaying = playPauseButton.dataset.playback === 'playing';
-
-        setPlaybackState(!isPlaying);
-
+        if (audio.paused) {
+            playCurrentTrack();
+        } else {
+            audio.pause();
+        }
     });
-
 
 
     soundButton?.addEventListener('click', () => {
-
         if (isMuted) {
-
             isMuted = false;
 
             if (volumeLevel === 0) {
-
-                volumeLevel = volumeBeforeMute > 0 ? volumeBeforeMute : 0.75;
-
+                volumeLevel = volumeBeforeMute > 0 ? volumeBeforeMute : 0.5;
             }
-
         } else {
-
             volumeBeforeMute = volumeLevel > 0 ? volumeLevel : volumeBeforeMute;
-
             isMuted = true;
-
         }
 
-
-
+        applyVolumeToAudio();
         syncVolumeUI();
-
     });
-
 
 
     volumeInput?.addEventListener('input', () => {
-
         volumeLevel = Number(volumeInput.value) / 100;
 
-
-
         if (volumeLevel > 0) {
-
             volumeBeforeMute = volumeLevel;
-
             isMuted = false;
-
         } else {
-
             isMuted = true;
-
         }
 
-
-
+        applyVolumeToAudio();
         syncVolumeUI();
-
     });
 
 
+    // Keep the play/pause icon and equalizer in sync with whatever the
+    // <audio> element is actually doing (covers programmatic play/pause too).
+    audio.addEventListener('play', () => {
+        setPlaybackState(true);
 
-    applyCover(activeIndex);
+        if (analyser) {
+            setEqState('live');
+            startVisualizer();
+        } else {
+            triggerFallbackPlayingAnimation();
+        }
+    });
 
+    audio.addEventListener('pause', () => {
+        setPlaybackState(false);
+
+        if (analyser) {
+            // Stop updating the live spectrum...
+            stopVisualizer();
+        }
+
+        if (equalizer.dataset.eq !== 'idle') {
+            // ...and in both live and fallback modes, clear any per-frame
+            // inline styles and hand off to the "paused" CSS state, which
+            // eases the bars back to their flat resting pose instead of
+            // leaving them frozen mid-pulse/mid-spectrum.
+            resetVisualizerBars();
+            setEqState('paused');
+        }
+    });
+
+    audio.addEventListener('ended', () => {
+        // audio.loop already handles repeating the current track natively,
+        // so this only fires when loop is off - advance to the next track.
+        goToTrack(getNextIndex(), { autoplay: true });
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+        // Prefer the audio file's real duration over the tracklist.json
+        // value once it's known, in case they differ slightly.
+        if (Number.isFinite(audio.duration) && audio.duration > 0) {
+            currentDuration = audio.duration;
+            updateDurationUI();
+            updateProgressUI(audio.currentTime);
+        }
+    });
+
+    audio.addEventListener('timeupdate', () => {
+        updateProgressUI(audio.currentTime);
+    });
+
+    audio.addEventListener('error', () => {
+        console.error('The Arcane Archive: failed to load audio for track', tracks[activeIndex]);
+    });
+
+
+    applyTrack(activeIndex);
+    audio.loop = loopOn;
+    applyVolumeToAudio();
+    resetVisualizerBars();
     setEqState('idle');
-
     setPlaybackState(false);
-
     setToggleState(shuffleButton, shuffleOn, 'Shuffle on', 'Shuffle off');
-
     setToggleState(loopButton, loopOn, 'Loop on', 'Loop off');
-
     syncVolumeUI();
 
+    // Keep the progress row's edges pinned to the shuffle button and volume
+    // rail as the fluid, container-query-based layout resizes.
+    window.addEventListener('resize', scheduleAlignProgressRow);
+    document.fonts?.ready?.then(scheduleAlignProgressRow).catch(() => {});
+    scheduleAlignProgressRow();
+
 })();
-
-

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dungeon Synth Music Player</title>
+    <title>The Arcane Archive</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -39,7 +39,7 @@
     </svg>
 
     <main class="music-player">
-        <h1 class="music-player__title"><span class="music-player__title-ink">Dungeon Synth Music Player</span></h1>
+        <h1 class="music-player__title"><span class="music-player__title-ink">The Arcane Archive</span></h1>
 
         <div class="music-player__cube">
             <div class="music-player__layout">
@@ -119,13 +119,31 @@
                             type="range"
                             min="0"
                             max="100"
-                            value="75"
+                            value="50"
                             aria-valuemin="0"
                             aria-valuemax="100"
-                            aria-valuenow="75"
+                            aria-valuenow="50"
                         >
                     </div>
                 </div>
+            </div>
+
+            <div class="music-player__progress">
+                <span class="music-player__progress-time music-player__progress-time--current" aria-hidden="true">00:00</span>
+                <div
+                    class="music-player__progress-rail"
+                    role="progressbar"
+                    aria-label="Playback progress"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-valuenow="0"
+                >
+                    <div class="music-player__progress-track" aria-hidden="true">
+                        <div class="music-player__progress-fill"></div>
+                    </div>
+                    <div class="music-player__progress-thumb" aria-hidden="true"></div>
+                </div>
+                <span class="music-player__progress-time music-player__progress-time--duration" aria-hidden="true">00:00</span>
             </div>
             </div>
 
