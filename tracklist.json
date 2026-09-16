@@ -1,52 +1,52 @@
 {
     "tracks": [
       {
-        "name": "1.The Black Mountain",
-        "artist": "Dwarven King",
+        "name": "The Black Mountain",
+        "artist": "Old Dwarven King",
         "image": "Cover1.webp",
-        "duration": "555"
+        "duration": "553"
       },
       {
-        "name": "2.Moonlit Ruins",
-        "artist": "Grave Warden",
+        "name": "Moonlit Ruins",
+        "artist": "The Ancients",
         "image": "Cover2.webp",
         "duration": "454"
       },
       {
-        "name": "3.Ashen Keep",
-        "artist": "Thornveil",
+        "name": "Ashen Keep",
+        "artist": "Inferno",
         "image": "Cover3.webp",
         "duration": "486"
       },
       {
-        "name": "4.Cryptborn",
-        "artist": "Darkwood",
+        "name": "Cryptborn",
+        "artist": "Necropolis",
         "image": "Cover4.webp",
         "audio": "Track-6.mp3",
         "duration": "188"
       },
       {
-        "name": "5.Wayfarer",
-        "artist": "Elder Gloom",
+        "name": "Wayfarer",
+        "artist": "The End of Days",
         "image": "Cover5.webp",
         "duration": "283"
       },
       {
-        "name": "6.Hero's Journey",
+        "name": "Hero's Journey",
         "artist": "Ironclad",
         "image": "Cover6.webp",
         "audio": "Track-4.mp3",
         "duration": "392"
       },
       {
-        "name": "7.Endless Caverns",
-        "artist": "Duskwraith",
+        "name": "Endless Caverns",
+        "artist": "Drunk Goblins",
         "image": "Cover7.webp",
         "duration": "365"
       },
       {
-        "name": "8.The Wise Wizard",
-        "artist": "Mire King",
+        "name": "The Wise Wizard",
+        "artist": "Galactus",
         "image": "Cover8.webp",
         "duration": "350"
       }
