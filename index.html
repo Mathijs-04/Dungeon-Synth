@@ -79,23 +79,53 @@
             </div>
 
             <div class="music-player__controls" role="group" aria-label="Playback controls">
-                <button type="button" class="music-player__control music-player__control--stop" aria-label="Stop">
-                    <img class="music-player__control-icon" src="images/Stop.png" alt="">
-                </button>
-                <button type="button" class="music-player__control music-player__control--previous" aria-label="Previous track">
-                    <img class="music-player__control-icon" src="images/Previous.png" alt="">
-                </button>
-                <button type="button" class="music-player__control music-player__control--play-pause" data-playback="paused" aria-label="Play">
-                    <img class="music-player__control-icon music-player__control-icon--play" src="images/Play.png" alt="">
-                    <img class="music-player__control-icon music-player__control-icon--pause" src="images/Pause.png" alt="">
-                </button>
-                <button type="button" class="music-player__control music-player__control--next" aria-label="Next track">
-                    <img class="music-player__control-icon" src="images/Next.png" alt="">
-                </button>
-                <button type="button" class="music-player__control music-player__control--sound" data-sound="on" aria-label="Mute">
-                    <img class="music-player__control-icon music-player__control-icon--sound-on" src="images/Sound-On.png" alt="">
-                    <img class="music-player__control-icon music-player__control-icon--sound-off" src="images/Sound-Off.png" alt="">
-                </button>
+                <div class="music-player__controls-side music-player__controls-side--start">
+                    <button type="button" class="music-player__control music-player__control--toggle music-player__control--shuffle" aria-pressed="false" aria-label="Shuffle off">
+                        <img class="music-player__control-icon" src="images/Shuffle.png" alt="">
+                        <span class="music-player__control-dot" aria-hidden="true"></span>
+                    </button>
+                    <button type="button" class="music-player__control music-player__control--toggle music-player__control--loop" aria-pressed="false" aria-label="Loop off">
+                        <img class="music-player__control-icon" src="images/Loop.png" alt="">
+                        <span class="music-player__control-dot" aria-hidden="true"></span>
+                    </button>
+                </div>
+
+                <div class="music-player__controls-main">
+                    <button type="button" class="music-player__control music-player__control--previous" aria-label="Previous track">
+                        <img class="music-player__control-icon" src="images/Previous.png" alt="">
+                    </button>
+                    <button type="button" class="music-player__control music-player__control--play-pause" data-playback="paused" aria-label="Play">
+                        <img class="music-player__control-icon music-player__control-icon--play" src="images/Play.png" alt="">
+                        <img class="music-player__control-icon music-player__control-icon--pause" src="images/Pause.png" alt="">
+                    </button>
+                    <button type="button" class="music-player__control music-player__control--next" aria-label="Next track">
+                        <img class="music-player__control-icon" src="images/Next.png" alt="">
+                    </button>
+                </div>
+
+                <div class="music-player__controls-side music-player__controls-side--end music-player__volume">
+                    <button type="button" class="music-player__control music-player__control--sound" data-sound="on" aria-label="Mute">
+                        <img class="music-player__control-icon music-player__control-icon--sound-on" src="images/Sound-On.png" alt="">
+                        <img class="music-player__control-icon music-player__control-icon--sound-off" src="images/Sound-Off.png" alt="">
+                    </button>
+                    <label class="music-player__volume-sr" for="music-player-volume">Volume</label>
+                    <div class="music-player__volume-rail">
+                        <div class="music-player__volume-track" aria-hidden="true">
+                            <div class="music-player__volume-fill"></div>
+                        </div>
+                        <input
+                            id="music-player-volume"
+                            class="music-player__volume-input"
+                            type="range"
+                            min="0"
+                            max="100"
+                            value="75"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                            aria-valuenow="75"
+                        >
+                    </div>
+                </div>
             </div>
             </div>
 
